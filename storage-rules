@@ -4,6 +4,10 @@ $IPAddressRange = "10.1.0.0/16"
 $snet1 = "subnet1"
 $snet2 = "subnet2"
 $saname = "mynetworkstorageaccount"
+$subnetprefixsnet1 = "10.1.0.0/24"
+$subnetprefixsnet2 = "10.1.1.0/24"
+$subnet_old_name = "default"
+
 
 
 #Get VNet Object
@@ -12,9 +16,8 @@ $VNet = Get-AzVirtualNetwork -Name $VNetName -ResourceGroupName $VNetRGName
 #Add IP address range to the vnet
 $VNet.AddressSpace.AddressPrefixes.Add($IPAddressRange)
 
-
-Add-AzVirtualNetworkSubnetConfig -Name $snet1 -VirtualNetwork $VNet -AddressPrefix "10.1.0.0/24" -ServiceEndpoint Microsoft.Storage
-Add-AzVirtualNetworkSubnetConfig -Name $snet2 -VirtualNetwork $VNet -AddressPrefix "10.1.1.0/24" -ServiceEndpoint Microsoft.Storage
+Add-AzVirtualNetworkSubnetConfig -Name $snet1 -VirtualNetwork $VNet -AddressPrefix $subnetprefixsnet1 -ServiceEndpoint Microsoft.Storage
+Add-AzVirtualNetworkSubnetConfig -Name $snet2 -VirtualNetwork $VNet -AddressPrefix $subnetprefixsnet2 -ServiceEndpoint Microsoft.Storage, Microsoft.KeyVault
 
 #Apply configuration stored in $Vnet
 Set-AzVirtualNetwork -VirtualNetwork $VNet
@@ -23,6 +26,6 @@ Set-AzVirtualNetwork -VirtualNetwork $VNet
 $subnet_new = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetName | Get-AzVirtualNetworkSubnetConfig -Name $snet1
 Add-AzStorageAccountNetworkRule -ResourceGroupName $VNetRGName -Name $saname -VirtualNetworkResourceId $subnet_new.Id
 
-$subnet_old = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetName | Get-AzVirtualNetworkSubnetConfig -Name "default"
+$subnet_old = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetName | Get-AzVirtualNetworkSubnetConfig -Name $subnet_old_name
 Remove-AzStorageAccountNetworkRule -ResourceGroupName $VNetRGName -Name $saname -VirtualNetworkResourceId $subnet_old.Id
 
