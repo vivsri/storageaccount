@@ -20,6 +20,7 @@ $subnets_102 = @(
 $saname = "mynetworkstorageaccount"
 $kvname = "mynetworkkeyvault"
 $SEP = "Microsoft.Storage", "Microsoft.KeyVault"
+$nsg = (Get-AzNetworkSecurityGroup -ResourceGroupName $VNetRGName)
 
 #Get VNet Object
 $VNet = Get-AzVirtualNetwork -Name $VNetName -ResourceGroupName $VNetRGName
@@ -30,11 +31,11 @@ $VNet.AddressSpace.AddressPrefixes.Add($ip)
 }
 
 foreach ($subnet in $subnets_101) {
-    Add-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet -AddressPrefix $subnet.range -ServiceEndpoint $SEP
+    Add-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet -AddressPrefix $subnet.range -ServiceEndpoint $SEP -NetworkSecurityGroup $nsg
 }
 
 foreach ($subnet in $subnets_102) {
-    Add-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet -AddressPrefix $subnet.range -ServiceEndpoint $SEP
+    Add-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet -AddressPrefix $subnet.range -ServiceEndpoint $SEP -NetworkSecurityGroup $nsg
 }
 
 #Apply configuration stored in $Vnet
