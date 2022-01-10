@@ -45,3 +45,16 @@ $subnet_new = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetNam
 Add-AzStorageAccountNetworkRule -ResourceGroupName $VNetRGName -Name $saname -VirtualNetworkResourceId $subnet_new.Id
 Add-AzKeyVaultNetworkRule -ResourceGroupName $VNetRGName -VaultName $kvname -VirtualNetworkResourceId $subnet_new.Id
 
+# Clean up subnets and Additional Address spaces 
+foreach ($subnet in $subnets_101) {
+    Remove-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet
+}
+
+foreach ($subnet in $subnets_102) {
+    Remove-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet
+}
+foreach ($ip in $IPAddressRange) {
+$VNet.AddressSpace.AddressPrefixes.Remove($ip)
+}
+Set-AzVirtualNetwork -VirtualNetwork $VNet
+
