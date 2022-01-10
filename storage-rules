@@ -1,15 +1,16 @@
 $VNetRGName = "az-ps-rg"
 $VNetName = "az-ps-rg-vnet"
 $IPAddressRange = "10.1.0.0/16"
-$snet1 = "subnet1"
-$snet2 = "subnet2"
+$subnets = @(
+[pscustomobject]  @{name='subnet1';range="10.1.0.0/24"}
+[pscustomobject]  @{name='subnet2';range="10.1.1.0/24"}
+[pscustomobject]  @{name='subnet3';range="10.1.2.0/24"}
+[pscustomobject]  @{name='subnet4';range="10.1.3.0/24"}
+[pscustomobject]  @{name='subnet5';range="10.1.4.0/24"}
+)
 $saname = "mynetworkstorageaccount"
-$subnetprefixsnet1 = "10.1.0.0/24"
-$subnetprefixsnet2 = "10.1.1.0/24"
-$subnet_old_name = "default"
+$kvname = "mynetworkkeyvault"
 $SEP = "Microsoft.Storage", "Microsoft.KeyVault"
-
-
 
 #Get VNet Object
 $VNet = Get-AzVirtualNetwork -Name $VNetName -ResourceGroupName $VNetRGName
@@ -17,14 +18,14 @@ $VNet = Get-AzVirtualNetwork -Name $VNetName -ResourceGroupName $VNetRGName
 #Add IP address range to the vnet
 $VNet.AddressSpace.AddressPrefixes.Add($IPAddressRange)
 
-Add-AzVirtualNetworkSubnetConfig -Name $snet1 -VirtualNetwork $VNet -AddressPrefix $subnetprefixsnet1 -ServiceEndpoint $SEP
-Add-AzVirtualNetworkSubnetConfig -Name $snet2 -VirtualNetwork $VNet -AddressPrefix $subnetprefixsnet2 -ServiceEndpoint $SEP
+foreach ($subnet in $subnets) {
+    Add-AzVirtualNetworkSubnetConfig -Name $subnet.name -VirtualNetwork $VNet -AddressPrefix $subnet.range -ServiceEndpoint $SEP
+}
+
 #Apply configuration stored in $Vnet
 Set-AzVirtualNetwork -VirtualNetwork $VNet
 
-
 $subnet_new = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetName | Get-AzVirtualNetworkSubnetConfig -Name $snet1
 Add-AzStorageAccountNetworkRule -ResourceGroupName $VNetRGName -Name $saname -VirtualNetworkResourceId $subnet_new.Id
+Add-AzKeyVaultNetworkRule -ResourceGroupName $VNetRGName -VaultName $kvname -VirtualNetworkResourceId $subnet_new.Id
 
-#$subnet_old = Get-AzVirtualNetwork -ResourceGroupName $VNetRGName -Name $VNetName | Get-AzVirtualNetworkSubnetConfig -Name $subnet_old_name
-#Remove-AzStorageAccountNetworkRule -ResourceGroupName $VNetRGName -Name $saname -VirtualNetworkResourceId $subnet_old.Id
